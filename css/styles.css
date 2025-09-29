@@ -466,3 +466,23 @@ section[id] {
 .icon-pink {
   background: linear-gradient(135deg, var(--accent-pink), #be185d);
 }
+
+/* About photo card styling */
+.about-photo-card {
+  max-width: 30rem;
+  border: none;
+  background: linear-gradient(
+    135deg,
+    var(--brand-100),
+    rgba(167, 139, 250, 0.1)
+  );
+  padding: 8px;
+  border-radius: 16px;
+}
+
+.about-photo {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
