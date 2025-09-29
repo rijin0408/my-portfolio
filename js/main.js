@@ -104,3 +104,25 @@ const titleObserver = new IntersectionObserver(
 );
 
 titleBlocks.forEach((el) => titleObserver.observe(el));
+// Lightbox functionality
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.querySelector(".lightbox-img");
+const lightboxClose = document.querySelector(".lightbox-close");
+
+document.querySelectorAll(".work img").forEach((img) => {
+  img.addEventListener("click", () => {
+    lightboxImg.src = img.src;
+    lightbox.classList.add("show");
+  });
+});
+
+// Close on click or Esc key
+lightboxClose.addEventListener("click", () =>
+  lightbox.classList.remove("show")
+);
+lightbox.addEventListener("click", (e) => {
+  if (e.target === lightbox) lightbox.classList.remove("show");
+});
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") lightbox.classList.remove("show");
+});
