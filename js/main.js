@@ -11,10 +11,11 @@ function handleNavbarScroll() {
 window.addEventListener("scroll", handleNavbarScroll);
 handleNavbarScroll();
 
-// Active nav link using IntersectionObserver
+// ===== Active nav link using IntersectionObserver (robust + bottom fallback) =====
 const sections = document.querySelectorAll("section[id]");
 const navLinks = document.querySelectorAll('.navbar .nav-link[href^="#"]');
 
+// Map href -> link
 const linkMap = {};
 navLinks.forEach((link) => (linkMap[link.getAttribute("href")] = link));
 
@@ -30,19 +31,50 @@ function setActive(href) {
   }
 }
 
+// Pick the section with the largest visible area
 const io = new IntersectionObserver(
   (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) setActive("#" + entry.target.id);
-    });
+    const visible = entries
+      .filter((e) => e.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+    if (visible.length) {
+      setActive("#" + visible[0].target.id);
+    }
   },
-  { root: null, rootMargin: "-30% 0px -50% 0px", threshold: 0 }
+  {
+    // Slightly looser margins so last section can be detected earlier
+    threshold: [0.1, 0.25, 0.5, 0.75, 1.0],
+    rootMargin: "-10% 0px -20% 0px",
+  }
 );
 
+// Observe sections
 sections.forEach((sec) => io.observe(sec));
-navLinks.forEach((link) =>
-  link.addEventListener("click", () => setActive(link.getAttribute("href")))
-);
+
+// Fallback: force Contact active when near bottom
+window.addEventListener("scroll", () => {
+  const nearBottom =
+    window.innerHeight + window.scrollY >=
+    document.documentElement.scrollHeight - 5;
+  if (nearBottom) setActive("#contact-preview");
+});
+
+// Also set active based on the current scroll on load
+function setActiveOnLoad() {
+  const y = window.scrollY + 100;
+  let current = "#top";
+  sections.forEach((sec) => {
+    if (sec.offsetTop <= y) current = "#" + sec.id;
+  });
+  setActive(current);
+}
+window.addEventListener("load", setActiveOnLoad);
+
+// Keep click behavior
+navLinks.forEach((link) => {
+  link.addEventListener("click", () => setActive(link.getAttribute("href")));
+});
 
 // Scroll progress bar
 const progress = document.getElementById("scroll-progress");
@@ -76,7 +108,6 @@ const revealObserver = new IntersectionObserver(
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         const el = entry.target;
-        // Support data-delay like "120"
         const delay = el.getAttribute("data-delay");
         if (delay)
           el.style.setProperty("--r-delay", `${parseInt(delay, 10)}ms`);
@@ -104,7 +135,8 @@ const titleObserver = new IntersectionObserver(
 );
 
 titleBlocks.forEach((el) => titleObserver.observe(el));
-// Lightbox functionality
+
+// ===== Lightbox functionality =====
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.querySelector(".lightbox-img");
 const lightboxClose = document.querySelector(".lightbox-close");
